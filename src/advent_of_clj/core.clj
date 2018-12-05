@@ -38,8 +38,9 @@
 		(count_letters_in_string s {})))
 
 (defn has_value [letter_count n]
-	(doseq [kv letter_count]
-		(= (second kv) n)))
+	(if	(contains? (set (vals letter_count)) n)
+		1
+		0))
 	
 
 (defn calc_checksum [input]
