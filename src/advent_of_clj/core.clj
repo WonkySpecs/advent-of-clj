@@ -1,7 +1,7 @@
 (ns advent_of_clj.core
   (:gen-class))
 
-(use '[clojure.string :only (join split-lines)])
+(use '[clojure.string :only (split-lines split replace)])
 
 (def numeric_days
 	#{"1"})
@@ -79,6 +79,23 @@
 				(subs_without box1 single_letter_diff)
 				(recur boxes_to_compare)))))
 
+(defn parse_claims [input]
+	(map
+	 (fn parse_claim [claim]
+		(let [[_ _ pos size] (split claim #"\s")]
+			(let [[x y] (split (replace (replace pos #"," " ") #":" "") #"\s")]
+				{:pos [x y] :size (split size #"x")})))
+	 input))
+
+(defn claimed_points [claim]
+	(let [[w h] (map read-string (:size claim))]
+		(for [x (range w) y (range h)]
+			(let [[x_start y_start] (map read-string (:pos claim))]
+			[(+ x x_start) (+ y y_start)]))))
+
+(defn num_conflicting_points [claims]
+	(claimed_points (first claims)))
+
 (defn -main
   [& args]
   (def day (subs (first args) 0 1))
@@ -88,4 +105,5 @@
 	  "1a" (reduce + input)
 	  "1b" (find_first_reccuring_freq input 0 (apply list input) #{})
 	  "2a" (calc_checksum input)
-	  "2b" (find_almost_matching_boxes input))))
+	  "2b" (find_almost_matching_boxes input)
+	  "3a" (num_conflicting_points (parse_claims input)))))
