@@ -50,11 +50,38 @@
 			(let [letter_count (count_letters_in_string string)]
 				(recur remaining (+ (has_value letter_count 2) twos) (+ (has_value letter_count 3) threes))))))
 
+(defn differ_by_one_letter? [str1 str2]
+	(loop [[c1 & remaining1] str1 [c2 & remaining2] str2 diff_count 0]
+		(if (nil? c1)
+			(if (= diff_count 1)
+				true
+				false)
+			(recur remaining1 remaining2 (if (= c1 c2)
+											 diff_count
+											 (inc diff_count))))))
+
+(defn find_almost_matching_boxes [box_vector]
+	(loop [[box1 & boxes_to_compare] box_vector]
+		(let [found (loop [[box2 & remaining] boxes_to_compare]
+			(if (nil? box2)
+				false
+				(if (differ_by_one_letter? box1 box2)
+					[box1 box2]
+					(recur remaining))))]
+			(if found
+				found
+				(recur boxes_to_compare)))))
+
+(defn matching_letters [str1 str2]
+	)
+
 (defn -main
   [& args]
   (def day (subs (first args) 0 1))
   (def input (get_input_vector day))
-  (println (case (first args)
+  (println 
+  	(case (first args)
 	  "1a" (reduce + input)
 	  "1b" (find_first_reccuring_freq input 0 (apply list input) #{})
-	  "2a" (calc_checksum input))))
+	  "2a" (calc_checksum input)
+	  "2b" (find_almost_matching_boxes input))))
