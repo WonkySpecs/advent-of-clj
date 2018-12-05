@@ -50,30 +50,34 @@
 			(let [letter_count (count_letters_in_string string)]
 				(recur remaining (+ (has_value letter_count 2) twos) (+ (has_value letter_count 3) threes))))))
 
-(defn differ_by_one_letter? [str1 str2]
-	(loop [[c1 & remaining1] str1 [c2 & remaining2] str2 diff_count 0]
+(defn one_letter_difference? [str1 str2]
+	(loop [[c1 & remaining1] str1 [c2 & remaining2] str2 diff_index -1 cur_index 0]
 		(if (nil? c1)
-			(if (= diff_count 1)
-				true
-				false)
-			(recur remaining1 remaining2 (if (= c1 c2)
-											 diff_count
-											 (inc diff_count))))))
+			(if (= diff_index -1)
+				false
+				diff_index)
+			(if (and (not (= c1 c2)) (not (= diff_index -1)))
+				false
+				(recur remaining1 remaining2 (if (= c1 c2)
+												 diff_index
+												 cur_index)
+											(inc cur_index))))))
+
+(defn subs_without [s i]
+	(str (subs s 0 i) (subs s (inc i))))
 
 (defn find_almost_matching_boxes [box_vector]
 	(loop [[box1 & boxes_to_compare] box_vector]
-		(let [found (loop [[box2 & remaining] boxes_to_compare]
+		(let [single_letter_diff (loop [[box2 & remaining] boxes_to_compare]
 			(if (nil? box2)
 				false
-				(if (differ_by_one_letter? box1 box2)
-					[box1 box2]
-					(recur remaining))))]
-			(if found
-				found
+				(let [diff (one_letter_difference? box1 box2)]
+				(if diff
+					diff
+					(recur remaining)))))]
+			(if single_letter_diff
+				(subs_without box1 single_letter_diff)
 				(recur boxes_to_compare)))))
-
-(defn matching_letters [str1 str2]
-	)
 
 (defn -main
   [& args]
