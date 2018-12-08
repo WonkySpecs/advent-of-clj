@@ -101,16 +101,37 @@
 	(into existing_claimed_points 
 		(into {} (map (fn [p] [p (point_conflict? p)]) new_claimed_points))))
 
+(defn calc_conflict_map [claims]
+	(loop [[claim & remaining] claims claimed_points {}]
+		(let [points_claimed (calc_claimed_points claim)]
+			(let [new_claimed_points (calc_conflicts claimed_points points_claimed)]
+				(if (nil? remaining)
+					new_claimed_points
+					(recur remaining new_claimed_points))))))
+
 (defn count_true_values [claimed_points]
 	(reduce + (map (fn [v] (if v 1 0)) (vals claimed_points))))
 
 (defn num_conflicting_points [claims]
-	(count_true_values
-		(loop [[claim & remaining] claims claimed_points {}]
+	(count_true_values (calc_conflict_map claims)))
+
+(defn non_conflicting_claim? [claim conflicts]
+	(loop [[point & rem_points] (calc_claimed_points claim)]
+		(if (nil? point)
+			true
+			(if (get conflicts point)
+				false
+				(recur rem_points)))))
+
+(defn find_non_conflicting_claim [claims]
+	(let [conflicts (calc_conflict_map claims)]
+		(loop [[claim & rem_claims] claims]
 			(if (nil? claim)
-				claimed_points
-				(let [new_claimed_points (calc_claimed_points claim)]
-					(recur remaining (calc_conflicts claimed_points new_claimed_points)))))))
+				"No non-conflicting claim found"
+				(if (non_conflicting_claim? claim conflicts)
+					claim
+					(recur rem_claims))))))
+
 
 (defn -main
   [& args]
@@ -122,4 +143,5 @@
 	  "1b" (find_first_reccuring_freq input 0 (apply list input) #{})
 	  "2a" (calc_checksum input)
 	  "2b" (find_almost_matching_boxes input)
-	  "3a" (num_conflicting_points (parse_claims input)))))
+	  "3a" (num_conflicting_points (parse_claims input))
+	  "3b" (find_non_conflicting_claim (parse_claims input)))))
