@@ -87,14 +87,30 @@
 				{:pos [x y] :size (split size #"x")})))
 	 input))
 
-(defn claimed_points [claim]
+(defn calc_claimed_points [claim]
 	(let [[w h] (map read-string (:size claim))]
 		(for [x (range w) y (range h)]
 			(let [[x_start y_start] (map read-string (:pos claim))]
 			[(+ x x_start) (+ y y_start)]))))
 
+(defn calc_conflicts [existing_claimed_points new_claimed_points]
+	(defn point_conflict? [new_p]
+		(if (contains? existing_claimed_points new_p)
+			true
+			false))
+	(into existing_claimed_points 
+		(into {} (map (fn [p] [p (point_conflict? p)]) new_claimed_points))))
+
+(defn count_true_values [claimed_points]
+	(reduce + (map (fn [v] (if v 1 0)) (vals claimed_points))))
+
 (defn num_conflicting_points [claims]
-	(claimed_points (first claims)))
+	(count_true_values
+		(loop [[claim & remaining] claims claimed_points {}]
+			(if (nil? claim)
+				claimed_points
+				(let [new_claimed_points (calc_claimed_points claim)]
+					(recur remaining (calc_conflicts claimed_points new_claimed_points)))))))
 
 (defn -main
   [& args]
