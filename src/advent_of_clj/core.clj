@@ -7,7 +7,7 @@
 	#{"1"})
 
 (defn get_input_vector [day]
-	(def str_vec (split-lines (slurp (str day ".in"))))
+	(def str_vec (split-lines (slurp (str "inputs/"day ".in"))))
 	(if (contains? numeric_days day)
 		(map read-string str_vec)
 		str_vec))
