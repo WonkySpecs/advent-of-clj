@@ -1,7 +1,7 @@
 (ns advent_of_clj.core
   (:gen-class))
 
-(use '[clojure.string :only (split-lines split replace)])
+(use '[clojure.string :only (split-lines split includes?)])
 
 (def numeric-days
 	#{"1"})
@@ -83,7 +83,7 @@
 	(map
 	 (fn parse-claim [claim]
 		(let [[- - pos size] (split claim #"\s")]
-			(let [[x y] (split (replace (replace pos #"," " ") #":" "") #"\s")]
+			(let [[x y] (split (clojure.string/replace (clojure.string/replace pos #"," " ") #":" "") #"\s")]
 				{:pos [x y] :size (split size #"x")})))
 	 input))
 
@@ -132,6 +132,8 @@
 					claim
 					(recur rem-claims))))))
 
+(defn calc-guard-minute [input]
+	(sort-by identity input))
 
 (defn -main
   [& args]
@@ -144,4 +146,5 @@
 	  "2a" (calc-checksum input)
 	  "2b" (find-almost-matching-boxes input)
 	  "3a" (num-conflicting-points (parse-claims input))
-	  "3b" (find-non-conflicting-claim (parse-claims input)))))
+	  "3b" (find-non-conflicting-claim (parse-claims input))
+	  "4a" (calc-guard-minute input))))
