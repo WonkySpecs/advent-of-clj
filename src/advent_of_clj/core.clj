@@ -132,8 +132,23 @@
 					claim
 					(recur rem-claims))))))
 
+(defn extract_datetime [s]
+	(subs (first (split s #"]")) 1))
+
+(defn minutes-between [time-str-1 time-str-2]
+	)
+
+(defn parse-guard-log [log-line]
+	(defn guard-num [line]
+		(first (split (second (split line #"#")) #"\s")))
+	[(cond 
+		(includes? log-line "#") (guard-num log-line)
+		(includes? log-line "wakes up") "wake"
+		(includes? log-line "falls asleep") "sleep")
+	 (extract_datetime log-line)])
+
 (defn calc-guard-minute [input]
-	(sort-by identity input))
+	(take 10 (map parse-guard-log (sort-by identity input))))
 
 (defn -main
   [& args]
