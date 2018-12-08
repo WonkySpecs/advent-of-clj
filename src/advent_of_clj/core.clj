@@ -3,145 +3,145 @@
 
 (use '[clojure.string :only (split-lines split replace)])
 
-(def numeric_days
+(def numeric-days
 	#{"1"})
 
-(defn get_input_vector [day]
-	(def str_vec (split-lines (slurp (str "inputs/"day ".in"))))
-	(if (contains? numeric_days day)
-		(map read-string str_vec)
-		str_vec))
+(defn get-input-vector [day]
+	(def str-vec (split-lines (slurp (str "inputs/"day ".in"))))
+	(if (contains? numeric-days day)
+		(map read-string str-vec)
+		str-vec))
 
-(defn find_first_reccuring_freq [change_vec cur_freq changes seen_freqs]
+(defn find-first-reccuring-freq [change-vec cur-freq changes seen-freqs]
 	(if (empty? changes)
-		(find_first_reccuring_freq change_vec cur_freq change_vec seen_freqs)
-		(do (def new_freq
-				(+ (first changes) cur_freq))
-			(if (contains? seen_freqs new_freq)
-				new_freq
-				(recur change_vec new_freq (drop 1 changes) (conj seen_freqs new_freq))))))
+		(find-first-reccuring-freq change-vec cur-freq change-vec seen-freqs)
+		(do (def new-freq
+				(+ (first changes) cur-freq))
+			(if (contains? seen-freqs new-freq)
+				new-freq
+				(recur change-vec new-freq (drop 1 changes) (conj seen-freqs new-freq))))))
 
 
-(defn count_letters_in_string
+(defn count-letters-in-string
 	([s counts]
 		;If string empty, return counts
 		(if (= (count s) 0)
 			counts
 			;Otherwise, if first letter is a key in 'counts', increment it's value; otherwise add it value 1
 			(do (let [c (subs s 0 1)]
-				(let [c_count (get counts c)]
-				(count_letters_in_string (subs s 1 (count s))
-										 (if c_count
+				(let [c-count (get counts c)]
+				(count-letters-in-string (subs s 1 (count s))
+										 (if c-count
 										 	(update counts c inc)
 										 	(conj counts [c 1]))))))))
 	([s]
-		(count_letters_in_string s {})))
+		(count-letters-in-string s {})))
 
-(defn has_value [letter_count n]
-	(if	(contains? (set (vals letter_count)) n)
+(defn has-value [letter-count n]
+	(if	(contains? (set (vals letter-count)) n)
 		1
 		0))
 	
 
-(defn calc_checksum [input]
+(defn calc-checksum [input]
 	(loop [[string & remaining] input twos 0 threes 0]
 		(if (nil? string)
 			(* twos threes)
-			(let [letter_count (count_letters_in_string string)]
-				(recur remaining (+ (has_value letter_count 2) twos) (+ (has_value letter_count 3) threes))))))
+			(let [letter-count (count-letters-in-string string)]
+				(recur remaining (+ (has-value letter-count 2) twos) (+ (has-value letter-count 3) threes))))))
 
-(defn one_letter_difference? [str1 str2]
-	(loop [[c1 & remaining1] str1 [c2 & remaining2] str2 diff_index -1 cur_index 0]
+(defn one-letter-difference? [str1 str2]
+	(loop [[c1 & remaining1] str1 [c2 & remaining2] str2 diff-index -1 cur-index 0]
 		(if (nil? c1)
-			(if (= diff_index -1)
+			(if (= diff-index -1)
 				false
-				diff_index)
-			(if (and (not (= c1 c2)) (not (= diff_index -1)))
+				diff-index)
+			(if (and (not (= c1 c2)) (not (= diff-index -1)))
 				false
 				(recur remaining1 remaining2 (if (= c1 c2)
-												 diff_index
-												 cur_index)
-											(inc cur_index))))))
+												 diff-index
+												 cur-index)
+											(inc cur-index))))))
 
-(defn subs_without [s i]
+(defn subs-without [s i]
 	(str (subs s 0 i) (subs s (inc i))))
 
-(defn find_almost_matching_boxes [box_vector]
-	(loop [[box1 & boxes_to_compare] box_vector]
-		(let [single_letter_diff (loop [[box2 & remaining] boxes_to_compare]
+(defn find-almost-matching-boxes [box-vector]
+	(loop [[box1 & boxes-to-compare] box-vector]
+		(let [single-letter-diff (loop [[box2 & remaining] boxes-to-compare]
 			(if (nil? box2)
 				false
-				(let [diff (one_letter_difference? box1 box2)]
+				(let [diff (one-letter-difference? box1 box2)]
 				(if diff
 					diff
 					(recur remaining)))))]
-			(if single_letter_diff
-				(subs_without box1 single_letter_diff)
-				(recur boxes_to_compare)))))
+			(if single-letter-diff
+				(subs-without box1 single-letter-diff)
+				(recur boxes-to-compare)))))
 
-(defn parse_claims [input]
+(defn parse-claims [input]
 	(map
-	 (fn parse_claim [claim]
-		(let [[_ _ pos size] (split claim #"\s")]
+	 (fn parse-claim [claim]
+		(let [[- - pos size] (split claim #"\s")]
 			(let [[x y] (split (replace (replace pos #"," " ") #":" "") #"\s")]
 				{:pos [x y] :size (split size #"x")})))
 	 input))
 
-(defn calc_claimed_points [claim]
+(defn calc-claimed-points [claim]
 	(let [[w h] (map read-string (:size claim))]
 		(for [x (range w) y (range h)]
-			(let [[x_start y_start] (map read-string (:pos claim))]
-			[(+ x x_start) (+ y y_start)]))))
+			(let [[x-start y-start] (map read-string (:pos claim))]
+			[(+ x x-start) (+ y y-start)]))))
 
-(defn calc_conflicts [existing_claimed_points new_claimed_points]
-	(defn point_conflict? [new_p]
-		(if (contains? existing_claimed_points new_p)
+(defn calc-conflicts [existing-claimed-points new-claimed-points]
+	(defn point-conflict? [new-p]
+		(if (contains? existing-claimed-points new-p)
 			true
 			false))
-	(into existing_claimed_points 
-		(into {} (map (fn [p] [p (point_conflict? p)]) new_claimed_points))))
+	(into existing-claimed-points 
+		(into {} (map (fn [p] [p (point-conflict? p)]) new-claimed-points))))
 
-(defn calc_conflict_map [claims]
-	(loop [[claim & remaining] claims claimed_points {}]
-		(let [points_claimed (calc_claimed_points claim)]
-			(let [new_claimed_points (calc_conflicts claimed_points points_claimed)]
+(defn calc-conflict-map [claims]
+	(loop [[claim & remaining] claims claimed-points {}]
+		(let [points-claimed (calc-claimed-points claim)]
+			(let [new-claimed-points (calc-conflicts claimed-points points-claimed)]
 				(if (nil? remaining)
-					new_claimed_points
-					(recur remaining new_claimed_points))))))
+					new-claimed-points
+					(recur remaining new-claimed-points))))))
 
-(defn count_true_values [claimed_points]
-	(reduce + (map (fn [v] (if v 1 0)) (vals claimed_points))))
+(defn count-true-values [claimed-points]
+	(reduce + (map (fn [v] (if v 1 0)) (vals claimed-points))))
 
-(defn num_conflicting_points [claims]
-	(count_true_values (calc_conflict_map claims)))
+(defn num-conflicting-points [claims]
+	(count-true-values (calc-conflict-map claims)))
 
-(defn non_conflicting_claim? [claim conflicts]
-	(loop [[point & rem_points] (calc_claimed_points claim)]
+(defn non-conflicting-claim? [claim conflicts]
+	(loop [[point & rem-points] (calc-claimed-points claim)]
 		(if (nil? point)
 			true
 			(if (get conflicts point)
 				false
-				(recur rem_points)))))
+				(recur rem-points)))))
 
-(defn find_non_conflicting_claim [claims]
-	(let [conflicts (calc_conflict_map claims)]
-		(loop [[claim & rem_claims] claims]
+(defn find-non-conflicting-claim [claims]
+	(let [conflicts (calc-conflict-map claims)]
+		(loop [[claim & rem-claims] claims]
 			(if (nil? claim)
 				"No non-conflicting claim found"
-				(if (non_conflicting_claim? claim conflicts)
+				(if (non-conflicting-claim? claim conflicts)
 					claim
-					(recur rem_claims))))))
+					(recur rem-claims))))))
 
 
 (defn -main
   [& args]
   (def day (subs (first args) 0 1))
-  (def input (get_input_vector day))
+  (def input (get-input-vector day))
   (println 
   	(case (first args)
 	  "1a" (reduce + input)
-	  "1b" (find_first_reccuring_freq input 0 (apply list input) #{})
-	  "2a" (calc_checksum input)
-	  "2b" (find_almost_matching_boxes input)
-	  "3a" (num_conflicting_points (parse_claims input))
-	  "3b" (find_non_conflicting_claim (parse_claims input)))))
+	  "1b" (find-first-reccuring-freq input 0 (apply list input) #{})
+	  "2a" (calc-checksum input)
+	  "2b" (find-almost-matching-boxes input)
+	  "3a" (num-conflicting-points (parse-claims input))
+	  "3b" (find-non-conflicting-claim (parse-claims input)))))
