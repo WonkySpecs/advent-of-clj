@@ -1,36 +1,9 @@
 # advent-of-clj
 
-FIXME: description
+Using https://adventofcode.com/2018/ as an excuse and motivation to explore Clojure.
 
-## Installation
-
-Download from http://example.com/FIXME.
+This is a learning project, the code is very rough but hopefully improving as time goes on.
 
 ## Usage
 
-FIXME: explanation
-
-    $ java -jar advent-of-clj-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2018 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+The project main function should be run with an argument for which day/level to solve. 1a runs day 1 problem 1, 3b day 3 problem 2 etc. There are two problems per day.
