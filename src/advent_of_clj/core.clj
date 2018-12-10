@@ -147,8 +147,23 @@
 		(includes? log-line "falls asleep") "sleep")
 	 (extract_datetime log-line)])
 
+(defn add-to-times [guard-times guard action timestamp]
+	(let [cur-value (get-in guard-times [guard (keyword action)])]
+		(if cur-value
+			(assoc-in guard-times [guard (keyword action)] (conj cur-value timestamp))
+			(assoc-in guard-times [guard (keyword action)] [timestamp]))))
+
+(defn build-guard-times-map [parsed-input]
+	(loop [[[action timestamp] & remaining] parsed-input current-guard nil guard-times {}]
+		(if (nil? action)
+			guard-times
+			(do (case action
+					"wake"  (recur remaining current-guard (add-to-times guard-times current-guard action timestamp))
+					"sleep"  (recur remaining current-guard (add-to-times guard-times current-guard action timestamp))
+					(recur remaining action guard-times))))))
+
 (defn calc-guard-minute [input]
-	(take 10 (map parse-guard-log (sort-by identity input))))
+	(build-guard-times-map (map parse-guard-log (sort-by identity input))))
 
 (defn -main
   [& args]
