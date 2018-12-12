@@ -132,11 +132,20 @@
 					claim
 					(recur rem-claims))))))
 
-(defn extract_datetime [s]
+(defn extract-datetime [s]
 	(subs (first (split s #"]")) 1))
 
-(defn minutes-between [time-str-1 time-str-2]
+(defn add-a-minute [time-str]
 	)
+
+(defn minute-from [time-str]
+	(+ (* 10 (Character/digit (first (take-last 2 time-str)) 10)) (Character/digit (last time-str) 10)))
+
+(defn minutes-between [time-str-1 time-str-2]
+	(loop [cur-time time-str-1 minutes {}]
+		(if (= cur-time time-str-2)
+			minutes
+			(recur (add-a-minute cur-time) (conj minutes (minute-from cur-time))))))
 
 (defn parse-guard-log [log-line]
 	(defn guard-num [line]
@@ -145,7 +154,7 @@
 		(includes? log-line "#") (guard-num log-line)
 		(includes? log-line "wakes up") "wake"
 		(includes? log-line "falls asleep") "sleep")
-	 (extract_datetime log-line)])
+	 (extract-datetime log-line)])
 
 (defn add-to-times [guard-times guard action timestamp]
 	(let [cur-value (get-in guard-times [guard (keyword action)])]
