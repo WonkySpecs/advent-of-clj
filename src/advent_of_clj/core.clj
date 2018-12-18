@@ -174,6 +174,36 @@
 (defn calc-guard-minute [input]
 	(build-guard-times-map (map parse-guard-log (sort-by identity input))))
 
+(defn first-alphabetically [letters]
+	)
+
+(defn all-tasks [task-dependencies]
+	(loop [[k & remaining] (keys task-dependencies) tasks #{}]
+		(if (nil? k)
+			tasks
+			(let [values (get task-dependencies k)]
+				(recur remaining (conj (apply conj tasks values) k))))))
+
+(defn unblocked-tasks [task-dependencies]
+	(apply disj (all-tasks task-dependencies) (keys task-dependencies)))
+
+(defn extract-step [line-part]
+	(subs line-part 1 2))
+
+(defn task-dependency [line]
+	(let [split-line (split line #"(S|s)tep")]
+		[(extract-step (second split-line)) (extract-step (last split-line))]))
+
+(defn parse-task-dependencies [input]
+	(loop [[line & remaining] input task-dependencies {}]
+		(if (nil? line)
+			task-dependencies
+			(let [[dependee dependent] (task-dependency line)]
+				(recur remaining (update task-dependencies dependent conj dependee))))))
+
+(defn calc-task-order [input]
+	(unblocked-tasks (parse-task-dependencies input)))
+
 (defn -main
   [& args]
   (def day (subs (first args) 0 1))
@@ -186,4 +216,5 @@
 	  "2b" (find-almost-matching-boxes input)
 	  "3a" (num-conflicting-points (parse-claims input))
 	  "3b" (find-non-conflicting-claim (parse-claims input))
-	  "4a" (calc-guard-minute input))))
+	  "4a" (calc-guard-minute input)
+	  "7a" (calc-task-order input))))
