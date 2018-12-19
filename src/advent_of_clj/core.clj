@@ -13,6 +13,7 @@
 		(map read-string str-vec)
 		str-vec))
 
+;1
 (defn find-first-reccuring-freq [change-vec cur-freq changes seen-freqs]
 	(if (empty? changes)
 		(find-first-reccuring-freq change-vec cur-freq change-vec seen-freqs)
@@ -22,7 +23,7 @@
 				new-freq
 				(recur change-vec new-freq (drop 1 changes) (conj seen-freqs new-freq))))))
 
-
+;2
 (defn count-letters-in-string
 	([s counts]
 		;If string empty, return counts
@@ -42,7 +43,6 @@
 	(if	(contains? (set (vals letter-count)) n)
 		1
 		0))
-	
 
 (defn calc-checksum [input]
 	(loop [[string & remaining] input twos 0 threes 0]
@@ -79,7 +79,7 @@
 			(if single-letter-diff
 				(subs-without box1 single-letter-diff)
 				(recur boxes-to-compare)))))
-
+;3
 (defn parse-claims [input]
 	(map
 	 (fn parse-claim [claim]
@@ -133,6 +133,7 @@
 					claim
 					(recur rem-claims))))))
 
+;4
 (defn extract-datetime [s]
 	(subs (first (split s #"]")) 1))
 
@@ -175,6 +176,10 @@
 (defn calc-guard-minute [input]
 	(build-guard-times-map (map parse-guard-log (sort-by identity input))))
 
+;5
+
+
+;7
 (defn first-alphabetically [letters]
 	(reduce (fn [c1 c2] (if (< (compare c1 c2) 0) c1 c2)) letters))
 
