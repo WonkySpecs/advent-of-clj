@@ -2,6 +2,7 @@
   (:gen-class))
 
 (use '[clojure.string :only (split-lines split includes?)])
+(use '[clojure.set :only (difference)])
 
 (def numeric-days
 	#{"1"})
@@ -167,15 +168,15 @@
 		(if (nil? action)
 			guard-times
 			(do (case action
-					"wake"  (recur remaining current-guard (add-to-times guard-times current-guard action timestamp))
-					"sleep"  (recur remaining current-guard (add-to-times guard-times current-guard action timestamp))
-					(recur remaining action guard-times))))))
+				"wake"  (recur remaining current-guard (add-to-times guard-times current-guard action timestamp))
+				"sleep"  (recur remaining current-guard (add-to-times guard-times current-guard action timestamp))
+				(recur remaining action guard-times))))))
 
 (defn calc-guard-minute [input]
 	(build-guard-times-map (map parse-guard-log (sort-by identity input))))
 
 (defn first-alphabetically [letters]
-	)
+	(reduce (fn [c1 c2] (if (< (compare c1 c2) 0) c1 c2)) letters))
 
 (defn all-tasks [task-dependencies]
 	(loop [[k & remaining] (keys task-dependencies) tasks #{}]
@@ -201,8 +202,32 @@
 			(let [[dependee dependent] (task-dependency line)]
 				(recur remaining (update task-dependencies dependent conj dependee))))))
 
+(defn remove-val-remove-k-if-empty [v-to-remove m k v]
+	(let [new-v (remove (fn [e] (= e v-to-remove)) v)]
+		(if (empty? new-v)
+			(dissoc m k)
+			(assoc m k new-v))))
+
+(defn complete-task [task-done dependencies]
+	(reduce-kv (partial remove-val-remove-k-if-empty task-done)  {} dependencies))
+
+(defn add-unblocked-tasks [all-tasks completed-tasks]
+	(loop [to-add (difference all-tasks (set (split completed-tasks #"(?=[A-Z])"))) done completed-tasks]
+		(if (empty? to-add)
+			done
+			(let [next-alphabetically (first-alphabetically to-add)]
+				(recur (disj to-add next-alphabetically) (str done next-alphabetically))))))
+
 (defn calc-task-order [input]
-	(unblocked-tasks (parse-task-dependencies input)))
+	(let [initial-dependencies (parse-task-dependencies input)]
+		(let [to-unblock-all 
+			(loop [task-dependencies initial-dependencies task-order ""]
+				(if (nil? (keys task-dependencies))
+					task-order
+					(let [next-task (first-alphabetically (unblocked-tasks task-dependencies))]
+						(recur (complete-task next-task task-dependencies) (str task-order next-task)))))
+			all-tasks (all-tasks initial-dependencies)]
+			(add-unblocked-tasks all-tasks to-unblock-all))))
 
 (defn -main
   [& args]
